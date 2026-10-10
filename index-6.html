@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Suivi sucres & calories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#07060F;--card:rgba(16,12,36,.88);--ink:#E8F4FF;--mute:#8A86B5;--line:rgba(0,240,255,.25);--ok:#19F2A3;--warn:#FF9F1C;--over:#FF4D3D;--accent:#8B5CF6;--cyan:#00F0FF}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;color:var(--ink);font:16px/1.45 "Chakra Petch",system-ui,sans-serif;min-height:100%;padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(28px + env(safe-area-inset-bottom,0px));
+background:radial-gradient(900px 520px at 90% -10%,rgba(139,92,246,.20),transparent 60%),radial-gradient(700px 520px at -10% 8%,rgba(0,240,255,.15),transparent 60%),linear-gradient(rgba(0,240,255,.045) 1px,transparent 1px) 0 0/34px 34px,linear-gradient(90deg,rgba(0,240,255,.045) 1px,transparent 1px) 0 0/34px 34px,var(--bg);background-attachment:fixed}
+main{max-width:560px;margin:0 auto}
+h1{font:800 1.3rem/1.1 Orbitron,"Chakra Petch",sans-serif;letter-spacing:.06em;margin:0;color:var(--cyan);text-shadow:0 0 14px rgba(0,240,255,.75)}
+h1 span{color:var(--accent);text-shadow:0 0 14px rgba(139,92,246,.8)}
+h2{font:700 .95rem Orbitron,"Chakra Petch",sans-serif;letter-spacing:.05em;margin:0 0 12px;color:var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:4px 16px 4px 16px;padding:16px;margin-bottom:14px;box-shadow:0 0 22px rgba(0,240,255,.08),inset 0 0 24px rgba(139,92,246,.04)}
+.card::before{content:"";position:absolute;left:12px;right:30%;top:-1px;height:2px;background:linear-gradient(90deg,var(--cyan),transparent);box-shadow:0 0 8px var(--cyan)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--cyan);background:rgba(0,240,255,.07);color:var(--cyan);border-radius:3px 10px 3px 10px;padding:8px 12px;transition:box-shadow .15s,background .15s}
+button:hover{background:rgba(0,240,255,.16);box-shadow:0 0 12px rgba(0,240,255,.55)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;box-shadow:0 0 16px rgba(139,92,246,.55)}
+button.primary:hover{background:#A07CF8;box-shadow:0 0 24px rgba(139,92,246,.85)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.date{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.date strong{font:600 .85rem Orbitron,"Chakra Petch",sans-serif;text-align:center;flex:1;color:var(--ink);letter-spacing:.03em}
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.meter .big{font:800 1.9rem/1 Orbitron,"Chakra Petch",sans-serif;color:var(--cyan);text-shadow:0 0 12px rgba(0,240,255,.6)}
+.meter:nth-child(2) .big{color:var(--accent);text-shadow:0 0 12px rgba(139,92,246,.65)}
+.meter .big small{font:400 .8rem "Chakra Petch",sans-serif;color:var(--mute);text-shadow:none}
+.bar{height:10px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0 5px;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--ok);box-shadow:0 0 12px currentColor;transition:width .3s}
+.hint{font-size:.85rem;color:var(--mute)}
+form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+form .full{grid-column:1/-1}
+label{font-size:.82rem;color:var(--mute);display:block;margin-bottom:3px}
+input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:3px 8px 3px 8px;background:#0A0818}
+input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 10px rgba(0,240,255,.4)}
+.meal h3{font-size:.95rem;margin:14px 0 4px;color:var(--cyan)}
+.row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px dashed var(--line)}
+.row .n{flex:1;min-width:0;overflow-wrap:anywhere}
+.row .v{font-size:.85rem;color:var(--mute);text-align:right;white-space:nowrap}
+.row .v b{color:var(--accent)}
+.row button{padding:2px 9px;line-height:1.3;border-color:var(--over);color:var(--over);background:transparent}
+.row button:hover{background:rgba(255,77,61,.15);box-shadow:0 0 10px rgba(255,77,61,.6)}
+.empty{color:var(--mute);font-size:.9rem;margin:6px 0 0}
+.chart{display:flex;align-items:flex-end;gap:6px;height:90px;position:relative;margin-top:8px}
+.chart .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;align-items:center}
+.chart .b{width:100%;border-radius:2px 2px 0 0;background:var(--ok);min-height:2px;box-shadow:0 0 10px currentColor}
+.chart .goal{position:absolute;left:0;right:0;border-top:2px dashed var(--accent);opacity:.75}
+.days{display:flex;gap:6px;margin-bottom:12px}
+.days span{flex:1;text-align:center;font-size:.75rem;color:var(--mute)}
+.goals{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+details summary{cursor:pointer;font:700 .95rem Orbitron,"Chakra Petch",sans-serif;color:var(--accent)}
+@media (prefers-reduced-motion:reduce){.bar i,button{transition:none}}
+[hidden]{display:none!important}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button{flex:1;font:600 .8rem Orbitron,"Chakra Petch",sans-serif;letter-spacing:.04em;padding:10px}
+.tabs button.on,.seg button.on{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 14px rgba(139,92,246,.55)}
+.seg{display:flex;gap:6px;margin-bottom:10px}
+.seg button{flex:1;padding:7px 6px;font-size:.88rem}
+.dow,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow span{text-align:center;font-size:.75rem;color:var(--mute);padding-bottom:2px}
+.cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px;border-radius:3px 8px 3px 8px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--ink)}
+.cell b{font-weight:600;font-size:.9rem}
+.cell small{font-size:.62rem;color:var(--mute);min-height:.8em;line-height:1}
+.cell.has{border-color:var(--c);background:color-mix(in srgb,var(--c) 20%,transparent)}
+.cell.has small{color:var(--ink)}
+.cell.today b{color:var(--accent);text-decoration:underline}
+.cell.sel{outline:2px solid var(--cyan);outline-offset:1px}
+#curve svg{display:block;width:100%;height:auto}
+#curve text{font:10px "Chakra Petch",sans-serif;fill:var(--mute)}
+#curve .val{fill:var(--ink)}
+#curve .ln{fill:none;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;filter:drop-shadow(0 0 4px currentColor)}
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><h1>SUCRES <span>//</span> CALORIES</h1></div>
+  <nav class="tabs" aria-label="Sections">
+    <button type="button" class="on" data-tab="jour">Journal</button>
+    <button type="button" data-tab="cal">Calendrier</button>
+  </nav>
+  <div id="tab-jour">
+
+  <div class="date">
+    <button id="prev" aria-label="Jour précédent">‹</button>
+    <strong id="dateLabel"></strong>
+    <button id="next" aria-label="Jour suivant">›</button>
+    <button id="today">Aujourd'hui</button>
+  </div>
+
+  <section class="card">
+    <div class="meters">
+      <div class="meter">
+        <div class="hint">Sucres</div>
+        <div class="big"><span id="sugarVal">0</span> <small>/ <span id="sugarGoal"></span> g</small></div>
+        <div class="bar"><i id="sugarBar"></i></div>
+        <div class="hint" id="sugarHint"></div>
+      </div>
+      <div class="meter">
+        <div class="hint">Calories</div>
+        <div class="big"><span id="kcalVal">0</span> <small>/ <span id="kcalGoal"></span> kcal</small></div>
+        <div class="bar"><i id="kcalBar"></i></div>
+        <div class="hint" id="kcalHint"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Ajouter un aliment</h2>
+    <form id="addForm" autocomplete="off">
+      <div class="full"><label for="name">Aliment</label><input id="name" list="known" required maxlength="80" placeholder="Ex. : barre chocolatée"><datalist id="known"></datalist></div>
+      <div><label for="kcal">Calories (kcal)</label><input id="kcal" type="number" min="0" step="1" inputmode="numeric" required></div>
+      <div><label for="sugar">Sucres (g)</label><input id="sugar" type="number" min="0" step="0.1" inputmode="decimal" required></div>
+      <div><label for="meal">Repas</label>
+        <select id="meal"><option>Petit-déjeuner</option><option>Déjeuner</option><option>Collation</option><option>Dîner</option></select></div>
+      <div><label for="qty">Quantité</label><input id="qty" type="number" min="0.1" step="0.1" value="1" inputmode="decimal"></div>
+      <button class="primary full" type="submit">Ajouter</button>
+    </form>
+    <p class="hint" style="margin:8px 0 0">Les valeurs sont par portion. Un aliment déjà saisi se remplit tout seul.</p>
+  </section>
+
+  <section class="card" id="log"></section>
+
+  <section class="card">
+    <details>
+      <summary>Objectifs et sauvegarde</summary>
+      <div class="goals" style="margin-top:10px">
+        <div><label for="gSugar">Objectif sucres (g/jour)</label><input id="gSugar" type="number" min="1" step="1"></div>
+        <div><label for="gKcal">Objectif calories (kcal/jour)</label><input id="gKcal" type="number" min="1" step="50"></div>
+      </div>
+      <div class="tools">
+        <button id="export">Exporter (JSON)</button>
+        <button id="importBtn">Importer</button>
+        <input id="importFile" type="file" accept="application/json" hidden>
+      </div>
+      <p class="hint">Les données restent sur cet appareil (navigateur). Exportez-les de temps en temps pour en garder une copie.</p>
+    </details>
+  </section>
+</div>
+
+  <div id="tab-cal" hidden>
+    <section class="card">
+      <div class="date">
+        <button type="button" id="mPrev" aria-label="Mois précédent">‹</button>
+        <strong id="mLabel"></strong>
+        <button type="button" id="mNext" aria-label="Mois suivant">›</button>
+      </div>
+      <div class="dow"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+      <div class="grid" id="calGrid"></div>
+      <p class="hint" style="margin:10px 0 0">Couleur selon les sucres : vert sous l'objectif, orange proche, rouge au-delà. Touchez un jour pour l'ouvrir.</p>
+    </section>
+    <section class="card">
+      <h2>Évolution</h2>
+      <div class="seg" id="perSeg" role="group" aria-label="Période">
+        <button type="button" class="on" data-per="week">Semaine</button>
+        <button type="button" data-per="month">Mois</button>
+        <button type="button" data-per="year">Année</button>
+      </div>
+      <div class="seg" id="metSeg" role="group" aria-label="Mesure">
+        <button type="button" class="on" data-met="sugar">Sucres</button>
+        <button type="button" data-met="kcal">Calories</button>
+      </div>
+      <div class="date">
+        <button type="button" id="cPrev" aria-label="Période précédente">‹</button>
+        <strong id="cLabel"></strong>
+        <button type="button" id="cNext" aria-label="Période suivante">›</button>
+      </div>
+      <div id="curve"></div>
+      <p class="hint" id="curveStats" style="margin:8px 0 0"></p>
+    </section>
+  </div>
+</main>
+
+<script>
+const KEY = 'suivi-sucres-calories-v1';
+const MEALS = ['Petit-déjeuner','Déjeuner','Collation','Dîner'];
+let state = { goals:{ sugar:50, kcal:2000 }, entries:{} };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.entries) state = Object.assign(state, s); } catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,'0');
+const keyOf = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+let current = new Date(); current.setHours(12,0,0,0);
+const round = (n,p=1) => Math.round(n*10**p)/10**p;
+const totals = k => (state.entries[k]||[]).reduce((t,e)=>({kcal:t.kcal+e.kcal,sugar:t.sugar+e.sugar}),{kcal:0,sugar:0});
+
+function color(r){ return r>1 ? 'var(--over)' : r>=.8 ? 'var(--warn)' : 'var(--ok)'; }
+
+function render(){
+  const k = keyOf(current), t = totals(k), g = state.goals;
+  const isToday = k === keyOf(new Date());
+  $('dateLabel').textContent = (isToday?'Aujourd\'hui · ':'') + current.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  $('sugarVal').textContent = round(t.sugar); $('kcalVal').textContent = Math.round(t.kcal);
+  $('sugarGoal').textContent = g.sugar; $('kcalGoal').textContent = g.kcal;
+  const sr = t.sugar/g.sugar, kr = t.kcal/g.kcal;
+  for (const [id,r] of [['sugarBar',sr],['kcalBar',kr]]){ const b=$(id); b.style.width=Math.min(r*100,100)+'%'; b.style.background=color(r); b.style.color=color(r); }
+  const left = g.sugar - t.sugar;
+  $('sugarHint').textContent = left>=0 ? 'Il reste '+round(left)+' g (≈ '+Math.floor(left/5)+' morceaux de sucre)' : 'Dépassé de '+round(-left)+' g';
+  const kl = g.kcal - t.kcal;
+  $('kcalHint').textContent = kl>=0 ? 'Il reste '+Math.round(kl)+' kcal' : 'Dépassé de '+Math.round(-kl)+' kcal';
+
+  // journal par repas
+  const list = state.entries[k]||[];
+  let html = '<h2>Journal du jour</h2>';
+  if(!list.length) html += '<p class="empty">Rien d\'ajouté pour ce jour.</p>';
+  for(const m of MEALS){
+    const items = list.filter(e=>e.meal===m); if(!items.length) continue;
+    const mt = items.reduce((a,e)=>({k:a.k+e.kcal,s:a.s+e.sugar}),{k:0,s:0});
+    html += '<div class="meal"><h3>'+m+' <span class="hint">— '+Math.round(mt.k)+' kcal, '+round(mt.s)+' g de sucres</span></h3>';
+    for(const e of items){
+      html += '<div class="row"><span class="n"></span><span class="v"><b>'+Math.round(e.kcal)+'</b> kcal · <b>'+round(e.sugar)+'</b> g</span><button data-del="'+e.id+'" aria-label="Supprimer">✕</button></div>';
+    }
+    html += '</div>';
+  }
+  $('log').innerHTML = html;
+  // noms insérés en texte brut (évite l'injection HTML)
+  const names = $('log').querySelectorAll('.n'); let i=0;
+  for(const m of MEALS) for(const e of list.filter(x=>x.meal===m)) names[i++].textContent = e.name + (e.qty!==1 ? ' ×'+e.qty : '');
+
+  if(!$("tab-cal").hidden) renderCal();
+  renderKnown();
+}
+
+function renderKnown(){
+  const seen = new Map();
+  Object.keys(state.entries).sort().forEach(k=>state.entries[k].forEach(e=>seen.set(e.name.toLowerCase(),e)));
+  const dl = $('known'); dl.innerHTML='';
+  seen.forEach(e=>{ const o=document.createElement('option'); o.value=e.name; dl.appendChild(o); });
+  dl._map = seen;
+}
+
+$('name').addEventListener('input', ()=>{
+  const e = $('known')._map && $('known')._map.get($('name').value.trim().toLowerCase());
+  if(e){ $('kcal').value = round(e.kcal/e.qty); $('sugar').value = round(e.sugar/e.qty); $('meal').value = e.meal; }
+});
+
+$('addForm').addEventListener('submit', ev=>{
+  ev.preventDefault();
+  const qty = parseFloat($('qty').value)||1, k = keyOf(current);
+  (state.entries[k] = state.entries[k]||[]).push({
+    id: Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    name: $('name').value.trim(), meal: $('meal').value, qty,
+    kcal: (parseFloat($('kcal').value)||0)*qty, sugar: (parseFloat($('sugar').value)||0)*qty
+  });
+  save(); $('addForm').reset(); $('qty').value=1; render(); $('name').focus();
+});
+
+$('log').addEventListener('click', ev=>{
+  const id = ev.target.dataset && ev.target.dataset.del; if(!id) return;
+  const k = keyOf(current);
+  state.entries[k] = (state.entries[k]||[]).filter(e=>e.id!==id);
+  if(!state.entries[k].length) delete state.entries[k];
+  save(); render();
+});
+
+const shift = n => { current.setDate(current.getDate()+n); render(); };
+$('prev').onclick = ()=>shift(-1); $('next').onclick = ()=>shift(1);
+$('today').onclick = ()=>{ current = new Date(); current.setHours(12,0,0,0); render(); };
+
+$('gSugar').value = state.goals.sugar; $('gKcal').value = state.goals.kcal;
+for(const [id,f] of [['gSugar','sugar'],['gKcal','kcal']]){
+  $(id).addEventListener('change', ()=>{ const v=parseFloat($(id).value); if(v>0){ state.goals[f]=v; save(); render(); } });
+}
+
+$('export').onclick = ()=>{
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(state,null,1)],{type:'application/json'}));
+  a.download = 'suivi-sucres-calories-'+keyOf(new Date())+'.json'; a.click(); URL.revokeObjectURL(a.href);
+};
+$('importBtn').onclick = ()=>$('importFile').click();
+$('importFile').addEventListener('change', ev=>{
+  const f = ev.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{ try{ const s=JSON.parse(r.result); if(s&&s.entries&&s.goals){ state=s; save(); $('gSugar').value=state.goals.sugar; $('gKcal').value=state.goals.kcal; render(); } else alert('Fichier non reconnu.'); }catch(e){ alert('Fichier invalide.'); } };
+  r.readAsText(f);
+});
+
+/* ---------- Onglets, calendrier, courbe ---------- */
+let calMonth = new Date(current.getFullYear(), current.getMonth(), 1, 12);
+let anchor = new Date(current), per = 'week', met = 'sugar';
+const dayVal = (d,m) => { const k = keyOf(d); return state.entries[k] ? totals(k)[m] : null; };
+
+function showTab(t){
+  $('tab-jour').hidden = t !== 'jour'; $('tab-cal').hidden = t !== 'cal';
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab === t));
+  if(t === 'cal') renderCal();
+}
+document.querySelector('.tabs').addEventListener('click', ev=>{ const t = ev.target.dataset && ev.target.dataset.tab; if(t) showTab(t); });
+
+function renderCal(){
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  $('mLabel').textContent = calMonth.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  const lead = (new Date(y,m,1).getDay()+6)%7, n = new Date(y,m+1,0).getDate();
+  const today = keyOf(new Date()), sel = keyOf(current);
+  let h = '';
+  for(let i=0;i<lead;i++) h += '<span></span>';
+  for(let d=1; d<=n; d++){
+    const k = keyOf(new Date(y,m,d,12)), has = state.entries[k];
+    let st = '', sub = '';
+    if(has){ const t = totals(k); st = '--c:'+color(t.sugar/state.goals.sugar); sub = Math.round(t.sugar)+' g'; }
+    h += '<button type="button" class="cell'+(has?' has':'')+(k===today?' today':'')+(k===sel?' sel':'')+'" data-day="'+k+'" style="'+st+'"><b>'+d+'</b><small>'+sub+'</small></button>';
+  }
+  $('calGrid').innerHTML = h;
+  renderCurve();
+}
+$('calGrid').addEventListener('click', ev=>{
+  const b = ev.target.closest('[data-day]'); if(!b) return;
+  const [y,m,d] = b.dataset.day.split('-').map(Number);
+  current = new Date(y,m-1,d,12); showTab('jour'); render();
+});
+$('mPrev').onclick = ()=>{ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1, 12); renderCal(); };
+$('mNext').onclick = ()=>{ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1, 12); renderCal(); };
+
+function setSeg(id, attr, val){
+  document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on', b.dataset[attr] === val));
+}
+$('perSeg').addEventListener('click', ev=>{ const v = ev.target.dataset && ev.target.dataset.per; if(!v) return; per = v; setSeg('perSeg','per',v); renderCurve(); });
+$('metSeg').addEventListener('click', ev=>{ const v = ev.target.dataset && ev.target.dataset.met; if(!v) return; met = v; setSeg('metSeg','met',v); renderCurve(); });
+function shiftAnchor(dir){
+  const y = anchor.getFullYear(), m = anchor.getMonth();
+  if(per === 'week'){ anchor = new Date(anchor); anchor.setDate(anchor.getDate()+7*dir); }
+  else if(per === 'month') anchor = new Date(y, m+dir, 1, 12);
+  else anchor = new Date(y+dir, 0, 1, 12);
+  renderCurve();
+}
+$('cPrev').onclick = ()=>shiftAnchor(-1); $('cNext').onclick = ()=>shiftAnchor(1);
+
+function periodData(){
+  const pts = [], labels = []; let label = '';
+  const short = d => d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+  if(per === 'week'){
+    const s0 = new Date(anchor); s0.setHours(12,0,0,0); s0.setDate(s0.getDate()-((s0.getDay()+6)%7));
+    for(let i=0;i<7;i++){ const d = new Date(s0); d.setDate(s0.getDate()+i); pts.push(dayVal(d,met)); labels.push(d.toLocaleDateString('fr-FR',{weekday:'short'}).slice(0,3)); }
+    const e = new Date(s0); e.setDate(s0.getDate()+6); label = short(s0)+' – '+short(e);
+  } else if(per === 'month'){
+    const y = anchor.getFullYear(), m = anchor.getMonth(), n = new Date(y,m+1,0).getDate();
+    for(let d=1; d<=n; d++){ pts.push(dayVal(new Date(y,m,d,12),met)); labels.push(d%5===1 ? String(d) : ''); }
+    label = new Date(y,m,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  } else {
+    const y = anchor.getFullYear();
+    for(let m=0; m<12; m++){
+      const n = new Date(y,m+1,0).getDate(); let sum = 0, c = 0;
+      for(let d=1; d<=n; d++){ const v = dayVal(new Date(y,m,d,12),met); if(v !== null){ sum += v; c++; } }
+      pts.push(c ? sum/c : null);
+      labels.push(new Date(y,m,1).toLocaleDateString('fr-FR',{month:'short'}).replace('.','').slice(0,3));
+    }
+    label = y+' · moyenne par jour';
+  }
+  return {pts, labels, label};
+}
+
+function renderCurve(){
+  const {pts, labels, label} = periodData();
+  $('cLabel').textContent = label;
+  const goal = state.goals[met], unit = met === 'sugar' ? 'g' : 'kcal';
+  const vals = pts.filter(v=>v !== null);
+  const W=340, H=200, L=34, R=10, T=14, B=24;
+  const max = Math.max(goal*1.25, ...vals, 1);
+  const x = i => L + (pts.length === 1 ? 0 : i*(W-L-R)/(pts.length-1));
+  const y = v => T + (1 - v/max)*(H-T-B);
+  const col = met === 'sugar' ? 'var(--cyan)' : 'var(--accent)';
+  let g = '';
+  for(let i=0;i<=4;i++){
+    const v = max*i/4, yy = y(v).toFixed(1);
+    g += '<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="rgba(0,240,255,.12)"/><text x="'+(L-6)+'" y="'+(+yy+3)+'" text-anchor="end">'+Math.round(v)+'</text>';
+  }
+  g += '<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(goal).toFixed(1)+'" y2="'+y(goal).toFixed(1)+'" stroke="var(--over)" stroke-width="1.5" stroke-dasharray="5 4" opacity=".8"/>';
+  let d = '', pen = false;
+  pts.forEach((v,i)=>{ if(v === null){ pen = false; return; } d += (pen?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1); pen = true; });
+  g += '<path class="ln" style="stroke:'+col+';color:'+col+'" d="'+d+'"/>';
+  const dense = pts.length > 12;
+  pts.forEach((v,i)=>{
+    if(v === null) return;
+    g += '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="'+(dense?2.5:4)+'" style="fill:'+color(v/goal)+'"><title>'+round(v)+' '+unit+'</title></circle>';
+    if(!dense) g += '<text class="val" x="'+x(i).toFixed(1)+'" y="'+(y(v)-8).toFixed(1)+'" text-anchor="middle">'+Math.round(v)+'</text>';
+  });
+  labels.forEach((t,i)=>{ if(t) g += '<text x="'+x(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle">'+t+'</text>'; });
+  $('curve').innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Courbe d\'évolution">'+g+'</svg>';
+
+  if(!vals.length){ $('curveStats').textContent = 'Aucune donnée sur cette période.'; return; }
+  const avg = vals.reduce((a,b)=>a+b,0)/vals.length, under = vals.filter(v=>v <= goal).length;
+  const what = per === 'year' ? 'mois' : 'jours';
+  $('curveStats').textContent = 'Moyenne : '+round(avg)+' '+unit+(per === 'year' ? ' par jour' : '/jour')+' · '+under+'/'+vals.length+' '+what+' sous l\'objectif (pointillés)';
+}
+
+render();
+</script>
+</body>
+</html>
